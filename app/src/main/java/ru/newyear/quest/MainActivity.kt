@@ -99,7 +99,7 @@ fun onColumnHeaderClick(context: Context, columnIndex: Int) {
         }
 
         2-> {
-            if (!preferenceManager.isLevelCompleted(1)) {
+            if (!preferenceManager.isLevelCompleted(0)) {
                 val intent = Intent(context, LizaRebus::class.java)
                 context.startActivity(intent)
             } else {

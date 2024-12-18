@@ -35,8 +35,9 @@ fun rebusCreate() {
 
     // Список вопросов и правильных ответов
     val questions = listOf(
-        Pair("rebus1", "15"), // Первый вопрос и ответ
-        Pair("rebus2", "30")  // Второй вопрос и ответ
+        Pair("Сколько получается ?", "15"), // Первый вопрос и ответ
+        Pair("Верно! Этот месяц – старший сын,\n" +
+                "Льда и снега господин: ", "декабрь")  // Второй вопрос и ответ
     )
 
     var currentQuestionIndex by remember { mutableStateOf(0) } // Индекс текущего вопроса
@@ -63,58 +64,58 @@ fun rebusCreate() {
     ) {
         // Если игрок выиграл, показываем сообщение о победе
         if (isGameWon) {
-            Text("Поздравляем! Вы прошли все уровни!", modifier = Modifier.padding(16.dp))
+            Text("Огонь!Следующий уровень уже разблокирован!", modifier = Modifier.padding(16.dp))
         } else {
             // Если ответ правильный, показываем сообщение
             if (isCorrect) {
                 // Проверяем, есть ли следующий вопрос
                 if (currentQuestionIndex < questions.size - 1) {
-                    Text("Огонь! Следующий уровень разблокирован!", modifier = Modifier.padding(16.dp))
-                    Button(onClick = {
-                        currentQuestionIndex++ // Переход к следующему вопросу
-                        isCorrect = false // Сбрасываем состояние
-                        text = "" // Очищаем текстовое поле
-                    }) {
-                        Text("Перейти к следующему вопросу")
-                    }
+                    // Переход к следующему вопросу
+                    currentQuestionIndex++ // Переход к следующему вопросу
+                    isCorrect = false // Сбрасываем состояние
+                    text = "" // Очищаем текстовое поле
+                    message = "" // Очищаем сообщение об ошибке
                 } else {
                     // Если это последний вопрос, игрок выиграл
                     isGameWon = true
                 }
-            } else {
-                TextField(
-                    value = text,
-                    onValueChange = { newText ->
-                        text = newText // Обновляем состояние при изменении текста
-                    },
-                    label = { Text("Введите ответ") }, // Подсказка для пользователя
-                    modifier = Modifier.fillMaxWidth() // Занимает всю ширину
+            }
+
+            // Отображаем текущий вопрос
+            Text(questions[currentQuestionIndex].first, modifier = Modifier.padding(16.dp))
+
+            TextField(
+                value = text,
+                onValueChange = { newText ->
+                    text = newText // Обновляем состояние при изменении текста
+                },
+                label = { Text("Введите ответ") }, // Подсказка для пользователя
+                modifier = Modifier.fillMaxWidth() // Занимает всю ширину
+            )
+
+            Spacer(modifier = Modifier.height(16.dp)) // Пробел между полем ввода и кнопкой
+
+            // Кнопка для проверки введенного текста
+            Button(onClick = {
+                // Проверяем ответ на текущий вопрос
+                if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true)) {
+                    preferenceManager.setLevelCompleted(currentQuestionIndex + 1, true)
+                    isCorrect = true // Устанавливаем состояние на true, если ответ правильный
+                    message = "" // Очищаем сообщение об ошибке
+                } else {
+                    message = "Попробуй еще раз!" // Уведомление об ошибке
+                }
+            }) {
+                Text("Отправить") // Переместили Text внутрь Button
+            }
+
+            // Отображение сообщения об ошибке
+            if (message.isNotEmpty()) {
+                Text(
+                    text = message,
+                    color = androidx.compose.ui.graphics.Color.Red,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
-
-                Spacer(modifier = Modifier.height(16.dp)) // Пробел между полем ввода и кнопкой
-
-                // Кнопка для проверки введенного текста
-                Button(onClick = {
-                    // Проверяем ответ на текущий вопрос
-                    if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true)) {
-                        preferenceManager.setLevelCompleted(currentQuestionIndex + 1, true)
-                        isCorrect = true // Устанавливаем состояние на true, если ответ правильный
-                        message = "" // Очищаем сообщение об ошибке
-                    } else {
-                        message = "Попробуй еще раз!" // Уведомление об ошибке
-                    }
-                }) {
-                    Text("Отправить") // Переместили Text внутрь Button
-                }
-
-                // Отображение сообщения об ошибке
-                if (message.isNotEmpty()) {
-                    Text(
-                        text = message,
-                        color = androidx.compose.ui.graphics.Color.Red,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
             }
         }
     }
