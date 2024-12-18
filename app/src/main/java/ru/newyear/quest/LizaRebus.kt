@@ -77,7 +77,10 @@ fun rebusCreate() {
                     message = "" // Очищаем сообщение об ошибке
                 } else {
                     // Если это последний вопрос, игрок выиграл
+
                     isGameWon = true
+                    preferenceManager.isGameWon
+                    preferenceManager.setLevelCompleted(2,true)
                 }
             }
 

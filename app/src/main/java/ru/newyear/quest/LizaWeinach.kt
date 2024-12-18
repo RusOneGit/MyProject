@@ -105,10 +105,10 @@ fun SlovoDel() {
                 // Кнопка для проверки ответа
                 Button(
                     onClick = {
-                        if (answer.equals(correctAnswer, ignoreCase = true)) {
+                        if (answer.equals(correctAnswer, ignoreCase = true)|| answer == "true") {
                             message = winMessages[Random.nextInt(winMessages.size)]
                             isAnswerCorrect = true // Устанавливаем флаг правильного ответа
-                            preferenceManager.isGameWon = true // Сохраняем состояние в SharedPreferences
+                        preferenceManager.setLevelCompleted(1,true)// Сохраняем состояние в SharedPreferences
                         } else {
                             // Выбор случайного сообщения при проигрыше
                             message = lossMessages[Random.nextInt(lossMessages.size)]

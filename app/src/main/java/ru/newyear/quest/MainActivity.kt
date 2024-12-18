@@ -89,8 +89,8 @@ fun onColumnHeaderClick(context: Context, columnIndex: Int) {
         }
 
         1 -> {
-            // Проверяем, пройден ли второй уровень
-            if (!preferenceManager.isLevelCompleted(0)) {
+
+            if (preferenceManager.isLevelCompleted(0)) {
                 val intent = Intent(context, LizaWeinach::class.java)
                 context.startActivity(intent)
             } else {
@@ -98,14 +98,23 @@ fun onColumnHeaderClick(context: Context, columnIndex: Int) {
             }
         }
 
-        2-> {
-            if (!preferenceManager.isLevelCompleted(0)) {
+        2 -> {
+            if (preferenceManager.isLevelCompleted(1)) {
                 val intent = Intent(context, LizaRebus::class.java)
                 context.startActivity(intent)
             } else {
-                Toast.makeText(context, "Сначала пройдите второй уровень.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Сначала пройдите второй уровень.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
+        3 -> {
+                if (preferenceManager.isLevelCompleted(2)) {
+                    val intent = Intent(context, OlgaCross::class.java)
+                    context.startActivity(intent)
+                } else {
+                    Toast.makeText(context, "Сначала пройдите третий уровень.", Toast.LENGTH_SHORT).show()
+                }
+            }
         else -> {
             Toast.makeText(context, "Сначала пройдите предыдущие уровни.", Toast.LENGTH_SHORT).show()
         }

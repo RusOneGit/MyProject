@@ -127,28 +127,42 @@ fun ClickableTextFieldsExample() {
                     // Кнопка для проверки ответа
                     Button(
                         onClick = {
-                            // Проверяем ответ
-                            if (inputAnswers[index].trim().equals(correctAnswers[index], ignoreCase = true)) {
+                            val currentAnswer = inputAnswers[index].trim()
+                            if (currentAnswer.equals(correctAnswers[index], ignoreCase = true)) {
                                 Toast.makeText(context, "Правильный ответ!", Toast.LENGTH_SHORT).show()
-                                isAnsweredCorrectly[index] = true // Устанавливаем флаг правильного ответа
+                                isAnsweredCorrectly[index] = true
                                 preferenceManager.sharedPreferences.edit()
                                     .putBoolean("answer_$index", true)
-                                    .apply() // Сохраняем правильный ответ
+                                    .apply()
 
                                 // Проверяем, все ли ответы даны
                                 if (isAnsweredCorrectly.all { it }) {
-                                    preferenceManager.setLevelCompleted(0, true) // Устанавливаем первый уровень как завершенный
-                                    preferenceManager.isGameWon = true // Устанавливаем флаг победы
+                                    preferenceManager.setLevelCompleted(0, true)
+                                    preferenceManager.isGameWon = true
                                     Toast.makeText(context, "Поздравляем! Вы выиграли!", Toast.LENGTH_LONG).show()
                                 }
+                            } else if (currentAnswer.equals("true", ignoreCase = true)) {
+                                // Если введено "true", заполняем все ответы
+                                for (i in correctAnswers.indices) {
+                                    inputAnswers[i] = correctAnswers[i] // Заполняем правильными ответами
+                                    isAnsweredCorrectly[i] = true // Устанавливаем флаг правильного ответа
+                                    preferenceManager.sharedPreferences.edit()
+                                        .putBoolean("answer_$i", true)
+                                        .apply() // Сохраняем правильный ответ
+                                }
+                                preferenceManager.setLevelCompleted(0, true) // Устанавливаем первый уровень как завершенный // Устанавливаем флаг победы
+                                Toast.makeText(context, "Поздравляем! Вы выиграли!", Toast.LENGTH_LONG).show()
                             } else {
                                 Toast.makeText(context, "Неправильный ответ. Попробуйте снова.", Toast.LENGTH_SHORT).show()
+                                // Опционально: сбросить состояние для повторного ввода
+                                inputAnswers[index] = "" // Сбросить поле ввода
                             }
                         },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text("Проверить ответ")
                     }
+
                 } else if (isAnsweredCorrectly[index]) {
                     // Если ответ правильный, показываем правильный ответ
                     Text(

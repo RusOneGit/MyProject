@@ -1,6 +1,5 @@
 package ru.newyear.quest.logika
 
-
 import android.content.Context
 import android.content.SharedPreferences
 
@@ -22,5 +21,19 @@ class PreferenceManager(context: Context) {
     // Метод для проверки, пройден ли уровень
     fun isLevelCompleted(levelIndex: Int): Boolean {
         return sharedPreferences.getBoolean("level_$levelIndex", false)
+    }
+
+    private val cellValuesKey = "cell_values"
+
+    // Метод для получения сохраненных значений ячеек
+    fun getCellValues(): List<String> {
+        val savedValues = sharedPreferences.getString(cellValuesKey, null)
+        return savedValues?.split(",")?.map { it.trim() } ?: List(56) { "" } // Возвращаем пустые строки, если нет сохраненных значений
+    }
+
+    // Метод для сохранения значений ячеек
+    fun saveCellValues(values: List<String>) {
+        val joinedValues = values.joinToString(",")
+        sharedPreferences.edit().putString(cellValuesKey, joinedValues).apply()
     }
 }
