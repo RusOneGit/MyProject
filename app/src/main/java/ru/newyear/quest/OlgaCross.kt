@@ -52,14 +52,13 @@ fun CrosswordGrid() {
 
     // Одно ключевое слово
     val keyword = "бомжиха"
-    var isGameWon by remember { mutableStateOf(false) } // Состояние для проверки, выиграна ли игра
+    var isLevelWon by remember { mutableStateOf(false) } // Состояние для проверки, выигран ли уровень
 
     // Загружаем значения ячеек из PreferenceManager
     LaunchedEffect(Unit) {
         val savedValues = preferenceManager.getCellValues()
         cellValues.clear()
         cellValues.addAll(savedValues)
-        isGameWon = preferenceManager.isGameWon // Загружаем состояние игры
     }
 
     // Ваш контент
@@ -81,11 +80,15 @@ fun CrosswordGrid() {
                             modifier = Modifier
                                 .size(40.dp)
                                 .padding(4.dp)
-                                .border(BorderStroke(1.dp, Color.Black)),
+                                .border(BorderStroke(1.dp, Color.Black))
+                                .clickable {
+                                    selectedCellIndex = index // Устанавливаем выбранную ячейку
+                                    inputValue = cellValues[index] // Загружаем текущее значение в поле ввода
+                                },
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = if (isGameWon) "⛄" else cellValues[index],
+                                text = if (isLevelWon) "⛄" else cellValues[index],
                                 fontSize = 20.sp
                             )
                         }
@@ -97,7 +100,7 @@ fun CrosswordGrid() {
         }
 
         // Поле ввода и кнопка "Отправить"
-        if (selectedCellIndex != -1 && !isGameWon) { // Скрываем поле ввода, если игра выиграна
+        if (selectedCellIndex != -1 && !isLevelWon) { // Скрываем поле ввода, если уровень выигран
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextField(
                     value = inputValue,
@@ -133,9 +136,8 @@ fun CrosswordGrid() {
 
         // Проверка на угаданное слово
         if (cellValues.all { it == keyword }) {
-            isGameWon = true // Устанавливаем состояние игры в "выиграно"
-            preferenceManager.isGameWon = true // Сохраняем состояние игры
-            preferenceManager.setLevelCompleted(3,true)
+            isLevelWon = true // Устанавливаем состояние уровня в "выиграно"
+            preferenceManager.setLevelCompleted(3, true) // Сохраняем статус уровня
             // Заполняем все ячейки снеговиками при победе
             for (i in cellValues.indices) {
                 cellValues[i] = "⛄"
@@ -153,9 +155,9 @@ fun CrosswordGrid() {
                 color = Color.Blue
             )
         } else {
-            // Изменяем текст на "бомжиха", если игра не выиграна
+            // Изменяем текст на "бомжиха", если уровень не выигран
             Text(
-                text = if (isGameWon) keyword else "Я знаю ответ!",
+                text = if (isLevelWon) keyword else "Я знаю ответ!",
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .clickable { showKeywordInput = true }
@@ -182,12 +184,14 @@ fun CrosswordGrid() {
             )
             Button(
                 onClick = {
-                    if (keywordInput.lowercase() == keyword || keywordInput == "true") {
-                        // Если ключевое слово угадано, завершаем игру
+                    if (keywordInput.lowercase() == keyword) {
+                        // Если ключевое слово угадано, завершаем уровень
                         for (i in cellValues.indices) {
                             cellValues[i] = "⛄" // Заполняем все ячейки угаданным словом
                         }
                         preferenceManager.saveCellValues(cellValues.toList()) // Сохраняем значения ячеек при угадывании
+                        isLevelWon = true // Устанавливаем состояние уровня в "выиграно"
+                        showKeywordInput = false // Скрываем поле ввода ключевого слова
                     } else {
                         // Можно добавить сообщение об ошибке, если нужно
                     }
@@ -196,6 +200,19 @@ fun CrosswordGrid() {
             ) {
                 Text("Проверить")
             }
+        } else if (isLevelWon) {
+            // Отображаем правильный ответ вместо текста "Я знаю ответ!"
+            Text(
+                text = keyword,
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Black))
+                    .background(Color.LightGray)
+                    .padding(8.dp),
+                fontSize = 20.sp,
+                color = Color.Blue
+            )
         }
     }
 }
+

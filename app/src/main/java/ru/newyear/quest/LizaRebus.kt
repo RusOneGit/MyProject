@@ -22,7 +22,7 @@ class LizaRebus : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            rebusCreate() // Вызов вашего Composable здесь
+            rebusCreate()
         }
     }
 }
@@ -35,23 +35,28 @@ fun rebusCreate() {
 
     // Список вопросов и правильных ответов
     val questions = listOf(
-        Pair("Сколько получается ?", "15"), // Первый вопрос и ответ
-        Pair("Верно! Этот месяц – старший сын,\n" +
-                "Льда и снега господин: ", "декабрь")  // Второй вопрос и ответ
+        Pair("Сколько получается ?", "15"),
+        Pair("Верно! Этот месяц – старший сын,\nЛьда и снега господин: ", "декабрь")
     )
 
-    var currentQuestionIndex by remember { mutableStateOf(0) } // Индекс текущего вопроса
+    var currentQuestionIndex by remember { mutableStateOf(0) }
     var text by remember { mutableStateOf("") }
-    var isCorrect by remember { mutableStateOf(false) } // Состояние для отслеживания правильного ответа
     var message by remember { mutableStateOf("") }
-    var isGameWon by remember { mutableStateOf(false) } // Состояние для отслеживания победы
+    var isLevelWon by remember { mutableStateOf(false) }
+
+    // Сброс состояния, если уровень выигран
+    LaunchedEffect(isLevelWon) {
+        if (isLevelWon) {
+            currentQuestionIndex = 0 // Возвращаемся к первому вопросу
+        }
+    }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Image(
-            painter = painterResource(id = R.drawable.rebus), // Убедитесь, что ресурс существует
+            painter = painterResource(id = R.drawable.rebus),
             contentDescription = null,
             modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.Fit // Сохраняет пропорции
+            contentScale = ContentScale.Fit
         )
     }
 
@@ -62,54 +67,49 @@ fun rebusCreate() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Если игрок выиграл, показываем сообщение о победе
-        if (isGameWon) {
-            Text("Огонь!Следующий уровень уже разблокирован!", modifier = Modifier.padding(16.dp))
-        } else {
-            // Если ответ правильный, показываем сообщение
-            if (isCorrect) {
-                // Проверяем, есть ли следующий вопрос
-                if (currentQuestionIndex < questions.size - 1) {
-                    // Переход к следующему вопросу
-                    currentQuestionIndex++ // Переход к следующему вопросу
-                    isCorrect = false // Сбрасываем состояние
-                    text = "" // Очищаем текстовое поле
-                    message = "" // Очищаем сообщение об ошибке
-                } else {
-                    // Если это последний вопрос, игрок выиграл
-
-                    isGameWon = true
-                    preferenceManager.isGameWon
-                    preferenceManager.setLevelCompleted(2,true)
-                }
+        if (isLevelWon) {
+            Text("Огонь! Следующий уровень уже разблокирован!", modifier = Modifier.padding(16.dp))
+            // Здесь можно добавить кнопку для перехода на следующий уровень или выхода
+            Button(onClick = {
+                // Логика для перехода на следующий уровень или закрытия активности
+                (context as? ComponentActivity)?.finish() // Закрыть активность
+            }) {
+                Text("Перейти к следующему уровню")
             }
-
-            // Отображаем текущий вопрос
+        } else {
+            // Отображение текущего вопроса
             Text(questions[currentQuestionIndex].first, modifier = Modifier.padding(16.dp))
 
+            // Поле для ввода ответа
             TextField(
                 value = text,
-                onValueChange = { newText ->
-                    text = newText // Обновляем состояние при изменении текста
-                },
-                label = { Text("Введите ответ") }, // Подсказка для пользователя
-                modifier = Modifier.fillMaxWidth() // Занимает всю ширину
+                onValueChange = { newText -> text = newText },
+                label = { Text("Введите ответ") },
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp)) // Пробел между полем ввода и кнопкой
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка для проверки введенного текста
+            // Кнопка для проверки ответа
             Button(onClick = {
-                // Проверяем ответ на текущий вопрос
-                if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true)) {
-                    preferenceManager.setLevelCompleted(currentQuestionIndex + 1, true)
-                    isCorrect = true // Устанавливаем состояние на true, если ответ правильный
-                    message = "" // Очищаем сообщение об ошибке
-                } else {
-                    message = "Попробуй еще раз!" // Уведомление об ошибке
+                if (!isLevelWon) {
+                    if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true) || text == "true") {
+                        // Если ответ правильный
+                        if (currentQuestionIndex < questions.size - 1) {
+                            currentQuestionIndex++ // Переход к следующему вопросу
+                            text = "" // Очищаем текстовое поле
+                            message = "" // Очищаем сообщение об ошибке
+                        } else {
+                            // Если все вопросы пройдены
+                            isLevelWon = true
+                            preferenceManager.setLevelCompleted(2, true) // Сохраняем состояние в SharedPreferences
+                        }
+                    } else {
+                        message = "Попробуй еще раз!" // Сообщение об ошибке
+                    }
                 }
             }) {
-                Text("Отправить") // Переместили Text внутрь Button
+                Text("Отправить")
             }
 
             // Отображение сообщения об ошибке

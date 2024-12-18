@@ -7,12 +7,6 @@ class PreferenceManager(context: Context) {
     val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
 
-    var isGameWon: Boolean
-        get() = sharedPreferences.getBoolean("is_game_won", false)
-        set(value) {
-            sharedPreferences.edit().putBoolean("is_game_won", value).apply()
-        }
-
     // Метод для установки состояния уровня (например, пройден ли уровень)
     fun setLevelCompleted(levelIndex: Int, completed: Boolean) {
         sharedPreferences.edit().putBoolean("level_$levelIndex", completed).apply()
@@ -36,4 +30,5 @@ class PreferenceManager(context: Context) {
         val joinedValues = values.joinToString(",")
         sharedPreferences.edit().putString(cellValuesKey, joinedValues).apply()
     }
+
 }

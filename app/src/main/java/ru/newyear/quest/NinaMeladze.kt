@@ -58,7 +58,6 @@ fun CrossWord() {
 fun ClickableTextFieldsExample() {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
-
     // Список для хранения текста каждой строки
     val textList = remember {
         mutableStateListOf(
@@ -138,7 +137,6 @@ fun ClickableTextFieldsExample() {
                                 // Проверяем, все ли ответы даны
                                 if (isAnsweredCorrectly.all { it }) {
                                     preferenceManager.setLevelCompleted(0, true)
-                                    preferenceManager.isGameWon = true
                                     Toast.makeText(context, "Поздравляем! Вы выиграли!", Toast.LENGTH_LONG).show()
                                 }
                             } else if (currentAnswer.equals("true", ignoreCase = true)) {

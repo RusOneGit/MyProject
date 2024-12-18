@@ -40,11 +40,12 @@ fun SlovoDel() {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
 
-    // Проверяем состояние игры
+    // Проверяем состояние уровня при запуске
+    var isLevelWon by remember { mutableStateOf(preferenceManager.isLevelCompleted(2)) }
     var answer by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
-    var isAnswerCorrect by remember { mutableStateOf(preferenceManager.isGameWon) } // Используем состояние из SharedPreferences
-    val correctAnswer = "Weihnachten" // Замените на нужный ответ
+
+    val correctAnswer = "Weihnachten" // Правильный ответ
 
     // Список фраз для проигрыша
     val lossMessages = listOf(
@@ -60,6 +61,11 @@ fun SlovoDel() {
         "Отлично, идем дальше!",
         "Успешный успех!"
     )
+
+    // Проверяем состояние при запуске
+    if (isLevelWon) {
+        message = winMessages[Random.nextInt(winMessages.size)]
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Фоновое изображение
@@ -88,7 +94,7 @@ fun SlovoDel() {
             Spacer(modifier = Modifier.height(16.dp)) // Отступ между изображением и полем ввода
 
             // Поле для ввода ответа
-            if (!isAnswerCorrect) {
+            if (!isLevelWon) {
                 BasicTextField(
                     value = answer,
                     onValueChange = { answer = it },
@@ -105,10 +111,10 @@ fun SlovoDel() {
                 // Кнопка для проверки ответа
                 Button(
                     onClick = {
-                        if (answer.equals(correctAnswer, ignoreCase = true)|| answer == "true") {
+                        if (answer.equals(correctAnswer, ignoreCase = true) || answer == "true") {
+                            isLevelWon = true // Устанавливаем флаг правильного ответа
                             message = winMessages[Random.nextInt(winMessages.size)]
-                            isAnswerCorrect = true // Устанавливаем флаг правильного ответа
-                        preferenceManager.setLevelCompleted(1,true)// Сохраняем состояние в SharedPreferences
+                            preferenceManager.setLevelCompleted(1, true) // Сохраняем состояние в SharedPreferences
                         } else {
                             // Выбор случайного сообщения при проигрыше
                             message = lossMessages[Random.nextInt(lossMessages.size)]
@@ -142,6 +148,7 @@ fun SlovoDel() {
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
+
                 // Кнопка "Вернуться назад"
                 Button(
                     onClick = {
@@ -156,7 +163,7 @@ fun SlovoDel() {
             }
 
             // Отображаем сообщение о неудаче, если оно есть
-            if (message.isNotEmpty() && !isAnswerCorrect) {
+            if (message.isNotEmpty() && !isLevelWon) {
                 Text(
                     fontSize = 40.sp,
                     text = message,
