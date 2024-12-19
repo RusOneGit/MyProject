@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,8 +35,8 @@ fun CrosswordGrid() {
     val preferenceManager = PreferenceManager(context)
 
     // Слова, которые нужно показать
-    val words6Letters = listOf("совхоз", "пробка", "мастак") // Слова из 6 букв
-    val words4Letters = listOf("клоп", "приз", "морж", "комбат") // Слова из 4 букв
+    val words6Letters = listOf("совхоз", "пробка", "мастак","комбат") // Слова из 6 букв
+    val words4Letters = listOf("клоп", "приз", "морж") // Слова из 4 букв
 
     // Схема кроссворда
     val grid = listOf(
@@ -187,8 +189,9 @@ fun CrosswordGrid() {
             displayedLetters.forEach { letter ->
                 Text(
                     text = letter,
-                    fontSize = 20.sp,
-                    color = Color.Black,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 40.sp,
+                    color = Color.Red,
                     modifier = Modifier.padding(4.dp)
                 )
             }
