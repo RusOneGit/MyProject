@@ -37,16 +37,16 @@ class LizaWeinach : ComponentActivity() {
 @Preview
 @Composable
 fun SlovoDel() {
+
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
 
     // Проверяем состояние уровня при запуске
-    var isLevelWon by remember { mutableStateOf(preferenceManager.isLevelCompleted(2)) }
+    var isLevelWon by remember { mutableStateOf(preferenceManager.isLevelCompleted(1)) }
     var answer by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
     val correctAnswer = "Weihnachten" // Правильный ответ
-
     // Список фраз для проигрыша
     val lossMessages = listOf(
         "Неплохой вариант, но нет",
@@ -114,7 +114,9 @@ fun SlovoDel() {
                         if (answer.equals(correctAnswer, ignoreCase = true) || answer == "true") {
                             isLevelWon = true // Устанавливаем флаг правильного ответа
                             message = winMessages[Random.nextInt(winMessages.size)]
-                            preferenceManager.setLevelCompleted(1, true) // Сохраняем состояние в SharedPreferences
+
+                            preferenceManager.setLevelCompleted(1, true)
+                        // Сохраняем состояние в SharedPreferences
                         } else {
                             // Выбор случайного сообщения при проигрыше
                             message = lossMessages[Random.nextInt(lossMessages.size)]

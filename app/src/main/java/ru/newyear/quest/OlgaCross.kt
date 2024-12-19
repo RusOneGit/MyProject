@@ -1,3 +1,4 @@
+
 package ru.newyear.quest
 
 import android.os.Bundle
@@ -31,6 +32,10 @@ fun CrosswordGrid() {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
 
+    // Слова, которые нужно показать
+    val words6Letters = listOf("совхоз", "пробка", "мастак") // Слова из 6 букв
+    val words4Letters = listOf("клоп", "приз", "морж", "комбат") // Слова из 4 букв
+
     // Схема кроссворда
     val grid = listOf(
         listOf(0, null, null, 0, null, 0, null),
@@ -47,12 +52,6 @@ fun CrosswordGrid() {
     val cellValues = remember { mutableStateListOf(*Array(8 * 7) { "" }) }
     var selectedCellIndex by remember { mutableStateOf(-1) }
     var inputValue by remember { mutableStateOf("") }
-    var showKeywordInput by remember { mutableStateOf(false) }
-    var keywordInput by remember { mutableStateOf("") }
-
-    // Одно ключевое слово
-    val keyword = "бомжиха"
-    var isLevelWon by remember { mutableStateOf(false) } // Состояние для проверки, выигран ли уровень
 
     // Загружаем значения ячеек из PreferenceManager
     LaunchedEffect(Unit) {
@@ -67,6 +66,47 @@ fun CrosswordGrid() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Отображение слов
+        Row(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Слова из 6 букв:",
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+                words6Letters.forEach { word ->
+                    Text(
+                        text = word,
+                        fontSize = 18.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(32.dp)) // Пробел между колонками
+
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Слова из 4 букв:",
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+                words4Letters.forEach { word ->
+                    Text(
+                        text = word,
+                        fontSize = 18.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+
         // Отображение кроссворда
         for (row in grid.indices) {
             Row(
@@ -88,7 +128,7 @@ fun CrosswordGrid() {
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = if (isLevelWon) "⛄" else cellValues[index],
+                                text = cellValues[index],
                                 fontSize = 20.sp
                             )
                         }
@@ -100,7 +140,7 @@ fun CrosswordGrid() {
         }
 
         // Поле ввода и кнопка "Отправить"
-        if (selectedCellIndex != -1 && !isLevelWon) { // Скрываем поле ввода, если уровень выигран
+        if (selectedCellIndex != -1) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextField(
                     value = inputValue,
@@ -134,85 +174,24 @@ fun CrosswordGrid() {
             }
         }
 
-        // Проверка на угаданное слово
-        if (cellValues.all { it == keyword }) {
-            isLevelWon = true // Устанавливаем состояние уровня в "выиграно"
-            preferenceManager.setLevelCompleted(3, true) // Сохраняем статус уровня
-            // Заполняем все ячейки снеговиками при победе
-            for (i in cellValues.indices) {
-                cellValues[i] = "⛄"
+        // Отображение введенных букв из ячеек с цифрами от 1 до 7
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            // Сбор введенных букв из ячеек с цифрами от 1 до 7
+            val displayedLetters = (0 until 7).map { index ->
+                cellValues[index + 3 * 7] // Получаем значения из ячеек с номерами 1-7
             }
-            preferenceManager.saveCellValues(cellValues.toList()) // Сохраняем значения ячеек при победе
 
-            Text(
-                text = "Победа!",
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .border(BorderStroke(1.dp, Color.Black))
-                    .background(Color.LightGray)
-                    .padding(8.dp),
-                fontSize = 20.sp,
-                color = Color.Blue
-            )
-        } else {
-            // Изменяем текст на "бомжиха", если уровень не выигран
-            Text(
-                text = if (isLevelWon) keyword else "Я знаю ответ!",
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .clickable { showKeywordInput = true }
-                    .border(BorderStroke(1.dp, Color.Black))
-                    .background(Color.LightGray)
-                    .padding(8.dp),
-                fontSize = 20.sp,
-                color = Color.Blue
-            )
-        }
-
-        // Поле ввода ключевого слова, если оно активно
-        if (showKeywordInput) {
-            TextField(
-                value = keywordInput,
-                onValueChange = { newValue -> keywordInput = newValue },
-                modifier = Modifier
-                    .width(200.dp)
-                    .padding(top = 8.dp)
-                    .border(BorderStroke(1.dp, Color.Black)),
-                textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
-                singleLine = true,
-                placeholder = { Text("Введите ключевое слово") }
-            )
-            Button(
-                onClick = {
-                    if (keywordInput.lowercase() == keyword) {
-                        // Если ключевое слово угадано, завершаем уровень
-                        for (i in cellValues.indices) {
-                            cellValues[i] = "⛄" // Заполняем все ячейки угаданным словом
-                        }
-                        preferenceManager.saveCellValues(cellValues.toList()) // Сохраняем значения ячеек при угадывании
-                        isLevelWon = true // Устанавливаем состояние уровня в "выиграно"
-                        showKeywordInput = false // Скрываем поле ввода ключевого слова
-                    } else {
-                        // Можно добавить сообщение об ошибке, если нужно
-                    }
-                },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text("Проверить")
+            displayedLetters.forEach { letter ->
+                Text(
+                    text = letter,
+                    fontSize = 20.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(4.dp)
+                )
             }
-        } else if (isLevelWon) {
-            // Отображаем правильный ответ вместо текста "Я знаю ответ!"
-            Text(
-                text = keyword,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .border(BorderStroke(1.dp, Color.Black))
-                    .background(Color.LightGray)
-                    .padding(8.dp),
-                fontSize = 20.sp,
-                color = Color.Blue
-            )
         }
     }
 }
-

@@ -33,6 +33,9 @@ fun rebusCreate() {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
 
+    // Проверяем, был ли уровень завершен
+    val isLevelCompleted = preferenceManager.isLevelCompleted(2) // Используйте правильный идентификатор уровня
+
     // Список вопросов и правильных ответов
     val questions = listOf(
         Pair("Сколько получается ?", "15"),
@@ -42,12 +45,12 @@ fun rebusCreate() {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var text by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
-    var isLevelWon by remember { mutableStateOf(false) }
+    var isLevelWon by remember { mutableStateOf(isLevelCompleted) }
 
     // Сброс состояния, если уровень выигран
     LaunchedEffect(isLevelWon) {
         if (isLevelWon) {
-            currentQuestionIndex = 0 // Возвращаемся к первому вопросу
+            currentQuestionIndex = 0 // Возвращаемся к первому вопросу, если уровень выигран
         }
     }
 
@@ -68,14 +71,8 @@ fun rebusCreate() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLevelWon) {
-            Text("Огонь! Следующий уровень уже разблокирован!", modifier = Modifier.padding(16.dp))
-            // Здесь можно добавить кнопку для перехода на следующий уровень или выхода
-            Button(onClick = {
-                // Логика для перехода на следующий уровень или закрытия активности
-                (context as? ComponentActivity)?.finish() // Закрыть активность
-            }) {
-                Text("Перейти к следующему уровню")
-            }
+            Text("МОЛОДЕЦ!", modifier = Modifier.padding(16.dp))
+            // Здесь можно добавить кнопку для выхода или перехода на другой экран
         } else {
             // Отображение текущего вопроса
             Text(questions[currentQuestionIndex].first, modifier = Modifier.padding(16.dp))
@@ -93,7 +90,7 @@ fun rebusCreate() {
             // Кнопка для проверки ответа
             Button(onClick = {
                 if (!isLevelWon) {
-                    if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true) || text == "true") {
+                    if (text.trim().equals(questions[currentQuestionIndex].second, ignoreCase = true)) {
                         // Если ответ правильный
                         if (currentQuestionIndex < questions.size - 1) {
                             currentQuestionIndex++ // Переход к следующему вопросу
